@@ -29,43 +29,81 @@ const numbersText = [
     { nombre: 90, texte: 'quatre-vingt-dix' },
     { nombre: 100, texte: 'cent' },
     { nombre: 1000, texte: 'mille' },
-    { nombre: 1000000, texte: 'un million' },
-    { nombre: 1000000000, texte: 'un milliard' }
+    { nombre: 1000000, texte: 'million' },
+    { nombre: 1000000000, texte: 'milliard' }
 ];
 
-function convert(num) {
-    let numberToText = numbersText.find(item => item.nombre === num);
+function numberToText(num) {
+    if (num == 0){
+        return;
+    }
 
-    return numberToText.texte;
+    const number = numbersText.find(item => item.nombre == num);
+
+    process.stdout.write(number.texte + " ");
+}
+
+function divideNumberByThree(num) {
+    const str = num.toString();    
+    const remainder = str.length % 3;    
+    const zerosToAdd = remainder === 0 ? 0 : 3 - remainder;
+    const paddedStr = '0'.repeat(zerosToAdd) + str;
+
+    const result = [];
+    for (let i = 0; i < paddedStr.length; i += 3) {
+        result.push(parseInt(paddedStr.substring(i, i + 3), 10));
+    }
+    
+    return result.filter(n => n !== 0);
+}
+
+function thousandsAdd(num) {
+    switch (num) {
+        case 2 :
+            process.stdout.write(numberToText(1000) + " ");
+            break;
+        case 3 :
+            process.stdout.write(numberToText(1000000) + " ");
+            break;
+        case 4 :
+            process.stdout.write(numberToText(1000000000) + " ");
+            break;
+    }
 }
 
 function splitting(num) {
-    let tab = num.toString().split('');
-    let tab_zero = [tab[0], ...tab.slice(1).map(() => '0')];
+    const tab = divideNumberByThree(num);
+    
+    for (let i = 0; i < tab.length; i++) {
+        // console.log("position : " + (tab.length - i))
+        let hundreds = tab[i] - tab[i]%100;
+        const tens = tab[i]%100 - tab[i]%10;
+        const units = tab[i]%10;
 
-    console.log(num)
-    if (tab_zero.length > 2 && tab_zero[0] > 1) {
-        console.log(convert(+tab_zero[0]))
-        tab_zero[0] = 1;
-    }
-
-    let tabToNumber = +tab_zero.join('');
-    let numberToText = numbersText.find(item => item.nombre === tabToNumber);
-
-    // Résultat
-    if (numberToText) {
-        console.log(numberToText.texte);
-    } else {
-        console.log(`Le nombre ${tabToNumber} n'a pas de correspondance textuelle.`);
-    }
-
-    // Récursion
-    if (tab.length > 1) {
-        let remainingNum = +num.toString().slice(1);
-        splitting(remainingNum);
+        if (tab[i] >= 100) {
+            // console.log("100 true")
+            if (tab[i] >= 200) {
+                numberToText(hundreds/100)
+                hundreds = hundreds/(hundreds/100)
+            }
+            numberToText(hundreds)
+            numberToText(tens)
+            numberToText(units)
+            thousandsAdd(tab.length - i)
+        } else if (tab[i] >= 10) {
+            // console.log("10 true")
+            numberToText(tens)
+            numberToText(units)
+            thousandsAdd(tab.length - i)
+        } else if (tab[i] < 10) {
+            // console.log("1 true")
+            if (!(units == 1 && (tab.length - i) == 2)) {
+                numberToText(units)
+            }
+            thousandsAdd(tab.length - i)
+        }
     }
 }
 
-
-
-
+console.log("<-- démarrage -->")
+splitting(1123633)
